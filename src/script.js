@@ -2,8 +2,15 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import GUI from "lil-gui";
 
-//Shadows
+//Shadows are always be challenge for 3D rendering
+//they need 60 renders per second to show shadows
+//Adding shadows replace all the materials wiht Depth Material
 
+//When the light renders are stored in textures - shadow maps
+//They are used on every materials supposed to receive shadows and
+//Projected on the geometry
+
+//To create shodows is not hard but to optimise shadows is hard
 /**
  * Base
  */
@@ -34,8 +41,11 @@ scene.add(ambientLight);
 
 // Directional light
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1.1);
+
+//Shadows
 directionalLight.castShadow = true;
 
+//to optimze the shadows
 directionalLight.shadow.mapSize.width = 1024;
 directionalLight.shadow.mapSize.height = 1024;
 
@@ -57,8 +67,8 @@ scene.add(directionalLight);
 const directionalLightCameraHelper = new THREE.CameraHelper(
   directionalLight.shadow.camera
 );
-directionalLightCameraHelper.visible = false;
-scene.add(directionalLightCameraHelper);
+directionalLightCameraHelper.visible = true;
+// scene.add(directionalLightCameraHelper);
 
 // Spot light
 const spotLight = new THREE.SpotLight(0xffffff, 2.4, 10, Math.PI * 0.3);
@@ -71,13 +81,15 @@ spotLight.shadow.mapSize.height = 1024;
 spotLight.shadow.camera.near = 1;
 spotLight.shadow.camera.far = 6;
 
+// spotLight.shadow.radius = 10;
+
 spotLight.position.set(0, 2, 2);
 scene.add(spotLight);
 scene.add(spotLight.target);
 
 const spotLightCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
-spotLightCameraHelper.visible = false;
-scene.add(spotLightCameraHelper);
+spotLightCameraHelper.visible = true;
+// scene.add(spotLightCameraHelper);
 
 // Point light
 const pointLight = new THREE.PointLight(0xffffff, 2.7);
@@ -95,7 +107,7 @@ scene.add(pointLight);
 
 const pointLightCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
 pointLightCameraHelper.visible = false;
-scene.add(pointLightCameraHelper);
+// scene.add(pointLightCameraHelper);
 
 /**
  * Materials
@@ -109,7 +121,7 @@ gui.add(material, "roughness").min(0).max(1).step(0.001);
  * Objects
  */
 const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), material);
-sphere.castShadow = true;
+sphere.castShadow = true; //shadow can be applied to sphere
 
 const plane = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), material);
 plane.receiveShadow = true;
@@ -176,6 +188,9 @@ controls.enableDamping = true;
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
+/**
+ * To Apply Shadows
+ */
 renderer.shadowMap.enabled = false;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
@@ -192,7 +207,7 @@ const tick = () => {
   // Update the sphere
   sphere.position.x = Math.cos(elapsedTime) * 1.5;
   sphere.position.z = Math.sin(elapsedTime) * 1.5;
-  sphere.position.y = Math.abs(Math.sin(elapsedTime * 3));
+  sphere.position.y = Math.abs(Math.sin(elapsedTime * 5));
 
   // Update the shadow
   sphereShadow.position.x = sphere.position.x;
